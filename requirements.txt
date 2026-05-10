@@ -1,0 +1,4 @@
+numpy>=1.24
+scipy>=1.10
+pyobjc>=10.0; platform_system == "Darwin"
+

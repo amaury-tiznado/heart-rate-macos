@@ -1,0 +1,133 @@
+Heart Beat Detector Source-Available Non-Commercial License v1.0
+
+Copyright (c) 2026 Amaury. All rights reserved.
+
+This software, documentation, user interface, design, signal-processing logic,
+and related project materials are proprietary source-available materials. They
+are made available only under the limited terms below.
+
+1. Definitions
+
+"Software" means the Heart Beat Detector source code, documentation, examples,
+assets, user interface text, signal-processing logic, project structure, and any
+other files distributed with this project.
+
+"Author" means Amaury, the copyright holder.
+
+"You" means any person or entity accessing, viewing, downloading, copying,
+running, modifying, or otherwise using the Software.
+
+"Commercial Use" means any use that is intended for, directed toward, connected
+to, or reasonably capable of producing commercial advantage, monetary
+compensation, business value, fundraising value, advertising value, product
+development value, or competitive advantage, whether direct or indirect.
+
+"Competing Work" means any software, hardware, service, application, model,
+library, prototype, demo, product, research artifact, or implementation that
+detects, estimates, measures, visualizes, or markets heart rate, pulse, or
+heartbeat information using a trackpad, touch surface, contact area, pressure
+sensor, or substantially similar input method.
+
+2. Limited Permission
+
+Subject to full compliance with this license, the Author grants You a limited,
+personal, revocable, non-exclusive, non-transferable, non-sublicensable license
+to view and run the Software solely for personal, private, non-commercial
+evaluation and educational proof-of-concept purposes.
+
+No other rights are granted.
+
+3. Restrictions
+
+You may not:
+
+a. use the Software for any Commercial Use;
+
+b. sell, rent, lease, license, sublicense, host, provide, monetize, or otherwise
+commercially exploit the Software or any part of it;
+
+c. copy, publish, upload, distribute, mirror, share, or make the Software
+available to any third party except as required for private backup of Your own
+personal copy;
+
+d. modify, adapt, translate, fork, merge, port, reimplement, or create
+derivative works based on the Software;
+
+e. use the Software, documentation, user interface, source code, architecture,
+signal-processing approach, measurement workflow, or project materials to
+create, assist, improve, train, benchmark, market, distribute, or commercialize
+any Competing Work;
+
+f. use the Software or any knowledge gained from access to the Software to build
+or help build a substantially similar trackpad, touch-surface, or pressure-based
+heart rate, pulse, or heartbeat detector;
+
+g. remove, alter, hide, or misrepresent copyright notices, license notices,
+project names, disclaimers, or attribution;
+
+h. claim ownership of the Software, the project, or any derivative,
+substantially similar, or competing implementation based on it;
+
+i. use the Software in medical, clinical, diagnostic, safety-critical, emergency,
+fitness-commercial, insurance, employment, or healthcare decision-making
+contexts;
+
+j. use the Software to train, fine-tune, evaluate, benchmark, or improve machine
+learning models, code generation systems, or automated development systems
+without the Author's prior written permission.
+
+4. No Patent, Trademark, or Concept License
+
+No patent, trademark, trade dress, trade secret, publicity, moral right, or other
+intellectual-property license is granted. All rights not expressly granted are
+reserved by the Author.
+
+To the maximum extent allowed by law and contract, You agree not to copy,
+commercialize, or create a Competing Work based on the Software, documentation,
+workflow, interface, architecture, or implementation approach. This contractual
+restriction applies to You as a condition of accessing the Software.
+
+5. Permission for Other Uses
+
+Any use not expressly allowed by this license requires the Author's prior written
+permission. This includes commercial use, redistribution, publication,
+derivative works, forks, ports, competing implementations, academic publication,
+public demos, and use inside any company, startup, lab, institution, or product
+team.
+
+6. Termination
+
+This license terminates automatically and immediately if You violate any term.
+After termination, You must stop using the Software and delete all copies in Your
+possession or control. Sections intended to protect the Author's rights,
+including restrictions, disclaimers, limitation of liability, and reserved
+rights, survive termination.
+
+7. No Medical Use
+
+The Software is an experimental proof of concept only. It is not a medical
+device and is not intended to diagnose, treat, monitor, prevent, or manage any
+medical condition. Do not rely on it for medical, health, safety, emergency, or
+clinical decisions.
+
+8. Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY
+KIND, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT,
+ACCURACY, RELIABILITY, SAFETY, OR AVAILABILITY.
+
+9. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE AUTHOR WILL NOT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, PUNITIVE, OR
+OTHER DAMAGES, OR FOR ANY LOSS OF PROFITS, REVENUE, DATA, GOODWILL, BUSINESS,
+HEALTH, OR USE, ARISING FROM OR RELATED TO THE SOFTWARE OR THIS LICENSE, EVEN IF
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+10. Governing Law
+
+Unless a written agreement signed by the Author states otherwise, this license is
+governed by the laws applicable in the Author's place of residence, without
+regard to conflict-of-law rules.
+
