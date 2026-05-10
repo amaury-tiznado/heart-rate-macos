@@ -1,23 +1,4 @@
 #!/usr/bin/env python3
-"""
-MacBook trackpad heart-rate estimator with the clean white UI.
-
-This is not a medical device. It estimates a pulse only when the trackpad
-contact/pressure stream has a stable repeating component in the human
-heart-rate band.
-
-The BPM is computed from completed 15-second measurement batches. The displayed
-number is not a continuously-smoothed tracker, so a stale low-frequency guess
-cannot drag the result toward 50 BPM while a new measurement is still collecting.
-
-Run:
-    python3 trackpad_heart_rate.py
-
-Useful:
-    python3 trackpad_heart_rate.py --touch-probe
-    python3 trackpad_heart_rate.py --pressure-only
-    python3 trackpad_heart_rate.py --simulate
-"""
 
 from __future__ import annotations
 
@@ -34,17 +15,14 @@ import numpy as np
 from scipy import signal
 
 
-# ============================================================
-# DETECTOR / INPUT CONSTANTS
-# ============================================================
-
-TARGET_SAMPLE_RATE_HZ = 60.0
-MEASUREMENT_SECONDS = 15.0
+TARGET_SAMPLE_RATE_HZ=60.0
+MEASUREMENT_SECONDS=15.0
 WINDOW_SECONDS = MEASUREMENT_SECONDS
 MIN_SECONDS = 14.2
 MIN_ACTIVE_FRACTION = 0.90
-MIN_BPM = 45.0
-MAX_BPM = 130.0
+MIN_BPM=45.0
+MAX_BPM=130.0
+SETTLE_SECONDS=4.0
 RESULT_HOLD_SECONDS = 3.0
 CONTACT_LATCH_SECONDS = 0.45
 CONTACT_DROPOUT_RESET_SECONDS = 0.85
@@ -103,8 +81,6 @@ class MTVector(ctypes.Structure):
 
 
 class MTContact(ctypes.Structure):
-    """Best-known MultitouchSupport contact layout used by Mac trackpads."""
-
     _fields_ = [
         ("frame", ctypes.c_int),
         ("timestamp", ctypes.c_double),
@@ -126,8 +102,6 @@ class MTContact(ctypes.Structure):
 
 
 class TouchContactSampler:
-    """Reads light finger contacts from macOS's private MultitouchSupport API."""
-
     def __init__(self) -> None:
         self.available = False
         self.error: str | None = None
@@ -285,14 +259,13 @@ class TouchContactSampler:
 
 
 class HeartRateEstimator:
-    """Turns finite trackpad signal batches into heart-rate estimates."""
-
     def __init__(self, sample_rate_hz: float = TARGET_SAMPLE_RATE_HZ) -> None:
         self.sample_rate_hz = float(sample_rate_hz)
         self.samples: deque[tuple[float, float, bool]] = deque(
-            maxlen=int((MEASUREMENT_SECONDS + 3.0) * self.sample_rate_hz)
+            maxlen=int((MEASUREMENT_SECONDS + SETTLE_SECONDS + 3.0) * self.sample_rate_hz)
         )
         self._capture_started_at: float | None = None
+        self._settle_until: float | None = None
         self._last_active_at: float | None = None
         self._result_hold_until: float | None = None
         self._last_completed_result = HeartRateResult(
@@ -320,13 +293,28 @@ class HeartRateEstimator:
 
         if active:
             if self._capture_started_at is None:
+                self._last_active_at = timestamp
+                if self._settle_until is None:
+                    self.samples.clear()
+                    self._settle_until = timestamp + SETTLE_SECONDS
+                    return
+                if timestamp < self._settle_until:
+                    return
                 self.samples.clear()
+                self._settle_until = None
                 self._capture_started_at = timestamp
             self._last_active_at = timestamp
             self.samples.append((timestamp, max(0.0, value), True))
             return
 
         if self._capture_started_at is None:
+            if (
+                self._settle_until is not None
+                and self._last_active_at is not None
+                and timestamp - self._last_active_at > CONTACT_DROPOUT_RESET_SECONDS
+            ):
+                self._settle_until = None
+                self._last_active_at = None
             self.samples.clear()
             return
 
@@ -336,6 +324,7 @@ class HeartRateEstimator:
         ):
             self.samples.clear()
             self._capture_started_at = None
+            self._settle_until = None
             self._last_active_at = None
             return
 
@@ -344,6 +333,17 @@ class HeartRateEstimator:
     def estimate(self, now: float | None = None) -> HeartRateResult:
         now = time.monotonic() if now is None else float(now)
         if self._capture_started_at is None:
+            if self._settle_until is not None and now < self._settle_until:
+                return self._remember(
+                    HeartRateResult(
+                        False,
+                        None,
+                        0.0,
+                        "stabilising touch keep holding",
+                        0.0,
+                        remaining_seconds=int(MEASUREMENT_SECONDS),
+                    )
+                )
             if (
                 self._result_hold_until is not None
                 and now < self._result_hold_until
@@ -356,18 +356,6 @@ class HeartRateEstimator:
                         self._last_completed_result.confidence,
                         "measurement complete",
                         self._last_completed_result.active_seconds,
-                        self._last_completed_result.peak_ratio,
-                        self._last_completed_result.autocorr_peak,
-                    )
-                )
-            if self._last_completed_result.bpm is not None:
-                return self._remember(
-                    HeartRateResult(
-                        True,
-                        self._last_completed_result.bpm,
-                        self._last_completed_result.confidence,
-                        "waiting for a new steady 15s touch",
-                        0.0,
                         self._last_completed_result.peak_ratio,
                         self._last_completed_result.autocorr_peak,
                     )
@@ -414,6 +402,7 @@ class HeartRateEstimator:
 
         self.samples.clear()
         self._capture_started_at = None
+        self._settle_until = None
         self._last_active_at = None
         return result
 
@@ -823,10 +812,8 @@ class HeartRateEstimator:
 
 
 def run_simulation() -> int:
-    """Quick detector check without opening the Mac trackpad GUI."""
-
     fs = TARGET_SAMPLE_RATE_HZ
-    bpm_true = 72.0
+    bpm_true = 100.0
     estimator = HeartRateEstimator(fs)
     start = time.monotonic()
     rng = np.random.default_rng(42)
@@ -935,7 +922,6 @@ def run_gui(use_touch: bool = True) -> int:
                 self.touch_sampler.start() if self.touch_sampler is not None else False
             )
 
-            # Raw GUI sampling state.
             self.last_pressure = 0.0
             self.last_signal = 0.0
             self.last_source = "touch" if self.touch_enabled else "pressure"
@@ -951,7 +937,6 @@ def run_gui(use_touch: bool = True) -> int:
             )
             self.last_terminal_print = 0.0
 
-            # UI-only animation state. Does not affect estimator input, BPM, or graph.
             self.current_phase = 0.0
 
             self._monitor = NSEvent.addLocalMonitorForEventsMatchingMask_handler_(
@@ -1065,7 +1050,9 @@ def run_gui(use_touch: bool = True) -> int:
 
             if now - self.last_terminal_print >= 1.0:
                 self.last_terminal_print = now
-                if self.result.remaining_seconds is not None:
+                if self.result.reason == "stabilising touch keep holding":
+                    print(self.result.reason)
+                elif self.result.remaining_seconds is not None:
                     print(f"hold still for {self.result.remaining_seconds}")
                 elif self.result.bpm is not None:
                     print(f"estimated heart rate {self.result.bpm:5.1f} bpm")
@@ -1271,6 +1258,8 @@ def run_gui(use_touch: bool = True) -> int:
             active = max(0.0, float(self.result.active_seconds))
             if self.last_signal <= TOUCH_CONTACT_MIN and active < 0.1:
                 return "Touch the trackpad"
+            if self.result.reason == "stabilising touch keep holding":
+                return self.result.reason
             if self.result.remaining_seconds is not None:
                 return f"Hold still for {self.result.remaining_seconds}"
             if not bpm_ready and active < MEASUREMENT_SECONDS:
@@ -1285,6 +1274,8 @@ def run_gui(use_touch: bool = True) -> int:
             active = max(0.0, float(self.result.active_seconds))
             if self.last_signal <= TOUCH_CONTACT_MIN and active < 0.1:
                 return "Touch the trackpad"
+            if self.result.reason == "stabilising touch keep holding":
+                return self.result.reason
             if self.result.remaining_seconds is not None:
                 return f"Hold still for {self.result.remaining_seconds}"
             if active < MEASUREMENT_SECONDS:
